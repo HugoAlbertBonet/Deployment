@@ -9,3 +9,17 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Deployment: Model-agnostic methods
+
+## Exercise 5.- Model-agnostic: Partial Dependency Plot (PDP).
+
+Remember: this exercise must have version-control using git and backup support through github. In this task, you only have to upload the link to the repository generated using git orders. It must also contain the report with the comments and the answers to the questions raised in this exercise.
+
+### 1.- One dimensional Partial Dependence Plot.
+The partial dependence plot shows the marginal effect of a feature on the predicted outcome of a previously fit model. 
+
+EXERCISE:
+Apply PDP to the regression example of predicting bike rentals. Fit a random forest approximation for the prediction of bike rentals (cnt). Use the partial dependence plot to visualize the relationships the model learned. Use the slides shown in class as model.  
+
+QUESTION:
+Analyse the influence of days since 2011, temperature, humidity and wind speed on the predicted bike counts.
