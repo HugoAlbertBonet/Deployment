@@ -20,9 +20,76 @@ The __partial__ dependence plot shows the marginal effect of a feature on the pr
 
 EXERCISE:
 Apply PDP to the regression example of predicting bike rentals. Fit a random forest approximation for the prediction of bike rentals (cnt). Use the partial dependence plot to visualize the relationships the model learned. Use the slides shown in class as model.  
+```{r}
+library(randomForest)
+data = read.csv("day.csv")
+data$windspeed = data$windspeed*67
+data$hum = data$hum * 100
+data$temp = (data$temp * 47) - 8
+data$days_since_2011=  as.integer(as.Date(as.character(data$dteday), format="%Y-%m-%d")- as.Date(as.character("2011-01-01"), format="%Y-%m-%d"))
+rtree = randomForest(cnt ~ ., data = data)
+
+```
 
 QUESTION:
 Analyse the influence of days since 2011, temperature, humidity and wind speed on the predicted bike counts.
+
+```{r}
+library(pdp)
+library(ggplot2)
+library(ggpubr)
+
+par.days <- partial(rtree, pred.var = c("days_since_2011"), plot = TRUE, rug = TRUE)
+#plot.days <- autoplot(par.days, contour = TRUE)
+
+par.temp <- partial(rtree, pred.var = c("temp"), plot = TRUE, rug = TRUE)
+#plot.temp <- autoplot(par.temp, contour = TRUE)
+
+par.hum <- partial(rtree, pred.var = c("hum"), plot = TRUE, rug = TRUE)
+#plot.hum <- autoplot(par.hum, contour = TRUE)
+
+par.windspeed <- partial(rtree, pred.var = c("windspeed"), plot = TRUE, rug = TRUE)
+#plot.windspeed <- autoplot(par.windspeed, contour = TRUE)
+
+ggarrange(par.days, par.temp, par.hum, par.windspeed, 
+          labels = c("Days since 2011", "Temperature", "Humidity", "Wind Speed"),
+          ncol = 1, nrow = 4)
+```
+
+On the one hand, the number of days since 2011 and the temperature are positivelly related to the number of 
+rented bikes in a particular date, both with a little decrease if the number is too high. The number of days since 2011
+show a particular sharp raise around 420 days and a really sharp but smaller one around 100, remaining almost constant in between those increases.
+However, the temperature influence raises also really fast but gradually between 5 degrees and 15, and remains constant until it reaches 27 degrees aproximatelly,
+when it starts decreasing a bit. We do not have enough temperature values to ensure that it will continue decreasing after 30 degrees, but it looks like a reasonable thought.
+
+On the other hand, high values of humidity and wind speed seem to decrease the number of rented bikes.
+Both have two extreme values in the beginning and the end of the distribution which are separated from the rest of the quantiles, leaving a big gap without enough data to draw conclusions (although it seems that the wind speed distribution is simetric to the humitity's).
+However, we have enough data to state that a raise of any of the variables would lead to a decrease of the number of rented bikes.
+Humidity remains constant for some values, but suddenly decreases relativelly fast, while the decrease produced by wind speed is gradual and almost linear until it reaches the gap with few data.
+
+
+### 2.- Bidimensional Partial Dependency Plot.
+EXERCISE:
+Generate a 2D Partial Dependency Plot with humidity and temperature to predict the number of bikes rented depending on those parameters.
+
+BE CAREFUL: due to the size, extract a set of random samples from the BBDD before generating the data for the Partial Dependency Plot. 
+
+Show the density distribution of both input features with the 2D plot as shown in the class slides. 
+
+TIP: Use geom_tile() to generate the 2D plot. Set width and height to avoid holes. 
+
+QUESTION:
+Interpret the results.
+
+### 3.- PDP to explain the price of a house.
+EXERCISE:
+Apply the previous concepts to predict the price of a house from the database kc_house_data.csv. In this case, use again a random forest approximation for the prediction based on the features bedrooms, bathrooms, sqft_living, sqft_lot, floors and yr_built. 
+Use the partial dependence plot to visualize the relationships the model learned.
+
+BE CAREFUL: due to the size, extract a set of random samples from the BBDD before generating the data for the Partial Dependency Plot. 
+
+QUESTION:
+Analyse the influence of bedrooms, bathrooms, sqft_living and floors on the predicted price.
 
 ### 2.- Bidimensional Partial Dependency Plot.
 EXERCISE:
