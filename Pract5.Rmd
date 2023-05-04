@@ -83,10 +83,66 @@ Interpret the results.
 
 ### 3.- PDP to explain the price of a house.
 EXERCISE:
-Apply the previous concepts to predict the price of a house from the database kc_house_data.csv. In this case, use again a random forest approximation for the prediction based on the features bedrooms, bathrooms, sqft_living, sqft_lot, floors and yr_built. 
+Apply the previous concepts to predict the price of a house from the database kc_house_data.csv. 
+In this case, use again a random forest approximation for the prediction based on the features bedrooms, 
+bathrooms, sqft_living, sqft_lot, floors and yr_built. 
 Use the partial dependence plot to visualize the relationships the model learned.
 
 BE CAREFUL: due to the size, extract a set of random samples from the BBDD before generating the data for the Partial Dependency Plot. 
 
 QUESTION:
 Analyse the influence of bedrooms, bathrooms, sqft_living and floors on the predicted price.
+
+```{r}
+library(randomForest)
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(pdp)
+data = read.csv("kc_house_data.csv")
+#bedrooms,bathrooms,sqft_living,sqft_lot,floors,yr_built.
+df = data[sample(nrow(data), 5000), ]
+df = df[, colnames(df) %in% c("price","bedrooms","bathrooms","sqft_living","sqft_lot","floors","yr_built")]
+rtree = randomForest(price ~ ., data = df)
+
+```
+
+
+```{r}
+par.bed <- partial(rtree, pred.var = c("bedrooms"), plot = TRUE, rug = TRUE)
+#plot.days <- autoplot(par.days, contour = TRUE)
+
+par.bath <- partial(rtree, pred.var = c("bathrooms"), plot = TRUE, rug = TRUE)
+#plot.temp <- autoplot(par.temp, contour = TRUE)
+
+par.living <- partial(rtree, pred.var = c("sqft_living"), plot = TRUE, rug = TRUE)
+#plot.hum <- autoplot(par.hum, contour = TRUE)
+
+par.lot <- partial(rtree, pred.var = c("sqft_lot"), plot = TRUE, rug = TRUE)
+#plot.windspeed <- autoplot(par.windspeed, contour = TRUE)
+
+par.floors <- partial(rtree, pred.var = c("floors"), plot = TRUE, rug = TRUE)
+#plot.hum <- autoplot(par.hum, contour = TRUE)
+
+par.yr <- partial(rtree, pred.var = c("yr_built"), plot = TRUE, rug = TRUE)
+#plot.windspeed <- autoplot(par.windspeed, contour = TRUE)
+
+ggarrange(par.bed, par.bath, par.living, par.lot, par.floors, par.yr, 
+          labels = c("Bedrooms", "Bathrooms", "Living Sqft", "Lot Sqft", "Floors", "Year Built"),
+          ncol = 2, nrow = 3)
+```
+
+The number of bathrooms, the living square feet and the number of floors tend to elevate the price of the house, especially the number of bathrooms and the living square feet are the ones that produce a higher difference in the price, 
+whereas the number of bedrooms, the lot square feet and the year where it was build decrease the price of the house with their first raise and then they reach a point where they make it increase again.
+However the reasons may vary. The lot square feet of the house present a really asymetric distribution which may be affecting the plot, while the other two variables are following more symetric ones, 
+so it would be interesting to show the relation between both of them.
+
+```{r}
+par.bed.yr <- partial(rtree, pred.var = c("bedrooms", "yr_built"), plot = TRUE, rug = TRUE)
+#plot.days <- autoplot(par.days, contour = TRUE)
+par.bed.yr
+```
+
+Here we can appreciate that the old houses are more expensive but the most current ones increase their price if they have a little number of rooms or too many of them.
+However, it is difficult to stablish a relation between them, but there is a gap where the prices descend which is located from 1980 and 2000 around 5 and 6 bedrooms, 
+a number of bedrooms that did not decrease the price so much in the past nor in the present (maybe because of a tendency of having more descendants during the marriage, as now families do not need so many rooms).
