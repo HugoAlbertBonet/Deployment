@@ -129,9 +129,13 @@ par.floors <- partial(rtree, pred.var = c("floors"), plot = TRUE, rug = TRUE)
 par.yr <- partial(rtree, pred.var = c("yr_built"), plot = TRUE, rug = TRUE)
 #plot.windspeed <- autoplot(par.windspeed, contour = TRUE)
 
-ggarrange(par.bed, par.bath, par.living, par.lot, par.floors, par.yr, 
-          labels = c("Bedrooms", "Bathrooms", "Living Sqft", "Lot Sqft", "Floors", "Year Built"),
-          ncol = 2, nrow = 3)
+
+par.bed
+par.bath
+par.living
+par.lot
+par.floors
+par.yr
 ```
 
 The number of bathrooms, the living square feet and the number of floors tend to elevate the price of the house, especially the number of bathrooms and the living square feet are the ones that produce a higher difference in the price, 
