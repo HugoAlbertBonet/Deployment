@@ -13,13 +13,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Exercise 5.- Model-agnostic: Partial Dependency Plot (PDP).
 
-Remember: this exercise must have version-control using git and backup support through github. In this task, you only have to upload the link to the repository generated using git orders. It must also contain the report with the comments and the answers to the questions raised in this exercise.
 
-### 1.- One dimensional Partial Dependence Plot.
-The partial dependence plot shows the marginal effect of a feature on the predicted outcome of a previously fit model. 
+### 1.- One dimensional Partial Dependency Plot.
 
-EXERCISE:
-Apply PDP to the regression example of predicting bike rentals. Fit a random forest approximation for the prediction of bike rentals (cnt). Use the partial dependence plot to visualize the relationships the model learned. Use the slides shown in class as model.  
+In this section, we will make use of dependency plots to understand how the a predicted feature behaves depending some of the variables that the model considers. This plot is very powerful and intuitive for explainable purposes and gives a quick insight into possible causal relationships between independent and dependent variables.
+In this case, our target variable will be the rented bikes of the dataset we have been using in the last practical works.
+
 ```{r}
 library(randomForest)
 data = read.csv("day.csv")
@@ -30,9 +29,6 @@ data$days_since_2011=  as.integer(as.Date(as.character(data$dteday), format="%Y-
 rtree = randomForest(cnt ~ ., data = data)
 
 ```
-
-QUESTION:
-Analyse the influence of days since 2011, temperature, humidity and wind speed on the predicted bike counts.
 
 ```{r}
 library(pdp)
@@ -78,7 +74,7 @@ This will be confirmed with the data distribution, since 1st quantile is very wi
 
 ```{r}
 df = data[sample(nrow(data), 450), ]
-rtree = randomForest(cnt ~ hum + temp, data = df)
+rtree = randomForest(cnt ~ ., data = df)
 Two.par <- partial(rtree, pred.var = c("temp","hum"), plot = TRUE, rug = TRUE)
 Two.par
 ```
@@ -86,23 +82,16 @@ Our thougths about feature distributions are apparently, so we will have to take
 
 Nevertheless, this bidimensional dependency plot reinforces some of the drawn conclusions from previous practical exercises. We stated out that despite the temperature effect plot revealed that the higher that temperature was, the more daily rented bikes might be expected, this was not feasible at all from a practical point of view. The same way, it could be seen that drier humidity conditions had a significant negative effect on the rented bikes. 
 
-This could lead us to think that the best conditions for high bike rentals were very hot and humid days. From a realistic perspective, we might expect that smooth temperatures and slight humid levels could encourage people to rent bikes, as that weather conditions are comfortable for the user. In fact, this is what the bidimensional dependency plot reveals, since the highest predicted values are concentrated on temperature values in the 15-25 interval and for humid concentrations around 50%. This contradicts what effect plots revealed but have are more realistic.
+This could lead us to think that the best conditions for high bike rentals were very hot and humid days. From a realistic perspective, we might expect that smooth temperatures and slight humid levels could encourage people to rent bikes, as that weather conditions are comfortable for the user. In fact, this is what the bidimensional dependency plot reveals, since the highest predicted values are concentrated on temperature values in the 15-30 degrees interval and for humid concentrations around 25%. These conditions contradict what effect plots revealed but are more realistic.
 
-The same way, it can be seen that the conditions that imply the most negative outcome for bike rentals, revealing a very few rented bikes on that conditions were very high or low humidity levels and temperatures around 0 degrees.
+The same way, it can be seen that the conditions that imply the most negative outcome for bike rentals, revealing a very few rented bikes on that conditions were very high umidity levels and temperatures around 0 degrees.
 
-Meanwhile, in general it can be seen that temperatures
+Meanwhile, in general it can be seen that temperatures under 15 degrees and humidity levels over 60 infer considerably negatively on the rented bikes.
+
 
 ### 3.- PDP to explain the price of a house.
-EXERCISE:
-Apply the previous concepts to predict the price of a house from the database kc_house_data.csv. 
-In this case, use again a random forest approximation for the prediction based on the features bedrooms, 
-bathrooms, sqft_living, sqft_lot, floors and yr_built. 
-Use the partial dependence plot to visualize the relationships the model learned.
 
-BE CAREFUL: due to the size, extract a set of random samples from the BBDD before generating the data for the Partial Dependency Plot. 
-
-QUESTION:
-Analyse the influence of bedrooms, bathrooms, sqft_living and floors on the predicted price.
+In this case, we aim to explain how predictions on house prices depend and behave depending on some of the property characteristics from an individual point of view, and then, considering the interaction between some of them.
 
 ```{r}
 library(randomForest)
