@@ -2,7 +2,9 @@
 title: "Pract5"
 author: "Hugo Albert and Pablo Sánchez"
 date: "2023-04-26"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
