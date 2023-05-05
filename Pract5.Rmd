@@ -2,7 +2,9 @@
 title: "Pract5"
 author: "Hugo Albert and Pablo Sánchez"
 date: "2023-04-26"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -13,13 +15,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Exercise 5.- Model-agnostic: Partial Dependency Plot (PDP).
 
-Remember: this exercise must have version-control using git and backup support through github. In this task, you only have to upload the link to the repository generated using git orders. It must also contain the report with the comments and the answers to the questions raised in this exercise.
 
-### 1.- One dimensional Partial Dependence Plot.
-The __partial__ dependence plot shows the marginal effect of a feature on the predicted outcome of a previously fit model. 
+### 1.- One dimensional Partial Dependency Plot.
 
-EXERCISE:
-Apply PDP to the regression example of predicting bike rentals. Fit a random forest approximation for the prediction of bike rentals (cnt). Use the partial dependence plot to visualize the relationships the model learned. Use the slides shown in class as model.  
+In this section, we will make use of dependency plots to understand how the a predicted feature behaves depending some of the variables that the model considers. This plot is very powerful and intuitive for explainable purposes and gives a quick insight into possible causal relationships between independent and dependent variables.
+In this case, our target variable will be the rented bikes of the dataset we have been using in the last practical works.
+
 ```{r}
 library(randomForest)
 data = read.csv("day.csv")
@@ -30,9 +31,6 @@ data$days_since_2011=  as.integer(as.Date(as.character(data$dteday), format="%Y-
 rtree = randomForest(cnt ~ ., data = data)
 
 ```
-
-QUESTION:
-Analyse the influence of days since 2011, temperature, humidity and wind speed on the predicted bike counts.
 
 ```{r}
 library(pdp)
@@ -53,7 +51,7 @@ par.windspeed <- partial(rtree, pred.var = c("windspeed"), plot = TRUE, rug = TR
 
 ggarrange(par.days, par.temp, par.hum, par.windspeed, 
           labels = c("Days since 2011", "Temperature", "Humidity", "Wind Speed"),
-          ncol = 1, nrow = 4)
+          ncol = 2, nrow = 2)
 ```
 
 On the one hand, the number of days since 2011 and the temperature are positivelly related to the number of 
@@ -69,29 +67,33 @@ Humidity remains constant for some values, but suddenly decreases relativelly fa
 
 
 ### 2.- Bidimensional Partial Dependency Plot.
-EXERCISE:
-Generate a 2D Partial Dependency Plot with humidity and temperature to predict the number of bikes rented depending on those parameters.
 
-BE CAREFUL: due to the size, extract a set of random samples from the BBDD before generating the data for the Partial Dependency Plot. 
+Bidimensional partial dependency plots are usually a very straightforward way to draw conclusions about the impact that the interaction of features has on the target variable. Nonetheless, it must be taken into consideration the fact that if the features do not apply being independent can lead to not fully realistic conclusions. 
 
-Show the density distribution of both input features with the 2D plot as shown in the class slides. 
+This arises because for unseen combination points of variables, the model has to create observations where the actual feature distribution probability is very low. In this case, we will be analyzing how the Humidity and Temperature infer on the rented bikes as a result of their interaction. Having said this and having into account some of the comments made in the previous section, we could expect that the interpretation might be unreliable at extreme combinations of the features such as very high temperatures together with extreme levels of humidity and in the opposite case. 
 
-TIP: Use geom_tile() to generate the 2D plot. Set width and height to avoid holes. 
+This will be confirmed with the data distribution, since 1st quantile is very width for both of the variables, what might reveal no samples at very low values and very short 10th quantile.
 
-QUESTION:
-Interpret the results.
+```{r}
+df = data[sample(nrow(data), 450), ]
+rtree = randomForest(cnt ~ ., data = df)
+Two.par <- partial(rtree, pred.var = c("temp","hum"), plot = TRUE, rug = TRUE)
+Two.par
+```
+Our thougths about feature distributions are apparently, so we will have to take into account the break of the independence assumptions.
+
+Nevertheless, this bidimensional dependency plot reinforces some of the drawn conclusions from previous practical exercises. We stated out that despite the temperature effect plot revealed that the higher that temperature was, the more daily rented bikes might be expected, this was not feasible at all from a practical point of view. The same way, it could be seen that drier humidity conditions had a significant negative effect on the rented bikes. 
+
+This could lead us to think that the best conditions for high bike rentals were very hot and humid days. From a realistic perspective, we might expect that smooth temperatures and slight humid levels could encourage people to rent bikes, as that weather conditions are comfortable for the user. In fact, this is what the bidimensional dependency plot reveals, since the highest predicted values are concentrated on temperature values in the 15-30 degrees interval and for humid concentrations around 25%. These conditions contradict what effect plots revealed but are more realistic.
+
+The same way, it can be seen that the conditions that imply the most negative outcome for bike rentals, revealing a very few rented bikes on that conditions were very high umidity levels and temperatures around 0 degrees.
+
+Meanwhile, in general it can be seen that temperatures under 15 degrees and humidity levels over 60 infer considerably negatively on the rented bikes.
+
 
 ### 3.- PDP to explain the price of a house.
-EXERCISE:
-Apply the previous concepts to predict the price of a house from the database kc_house_data.csv. 
-In this case, use again a random forest approximation for the prediction based on the features bedrooms, 
-bathrooms, sqft_living, sqft_lot, floors and yr_built. 
-Use the partial dependence plot to visualize the relationships the model learned.
 
-BE CAREFUL: due to the size, extract a set of random samples from the BBDD before generating the data for the Partial Dependency Plot. 
-
-QUESTION:
-Analyse the influence of bedrooms, bathrooms, sqft_living and floors on the predicted price.
+In this case, we aim to explain how predictions on house prices depend and behave depending on some of the property characteristics from an individual point of view, and then, considering the interaction between some of them.
 
 ```{r}
 library(randomForest)
@@ -127,9 +129,13 @@ par.floors <- partial(rtree, pred.var = c("floors"), plot = TRUE, rug = TRUE)
 par.yr <- partial(rtree, pred.var = c("yr_built"), plot = TRUE, rug = TRUE)
 #plot.windspeed <- autoplot(par.windspeed, contour = TRUE)
 
-ggarrange(par.bed, par.bath, par.living, par.lot, par.floors, par.yr, 
-          labels = c("Bedrooms", "Bathrooms", "Living Sqft", "Lot Sqft", "Floors", "Year Built"),
-          ncol = 2, nrow = 3)
+
+par.bed
+par.bath
+par.living
+par.lot
+par.floors
+par.yr
 ```
 
 The number of bathrooms, the living square feet and the number of floors tend to elevate the price of the house, especially the number of bathrooms and the living square feet are the ones that produce a higher difference in the price, 
