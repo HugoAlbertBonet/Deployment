@@ -53,7 +53,7 @@ par.windspeed <- partial(rtree, pred.var = c("windspeed"), plot = TRUE, rug = TR
 
 ggarrange(par.days, par.temp, par.hum, par.windspeed, 
           labels = c("Days since 2011", "Temperature", "Humidity", "Wind Speed"),
-          ncol = 1, nrow = 4)
+          ncol = 2, nrow = 2)
 ```
 
 On the one hand, the number of days since 2011 and the temperature are positivelly related to the number of 
@@ -69,25 +69,28 @@ Humidity remains constant for some values, but suddenly decreases relativelly fa
 
 
 ### 2.- Bidimensional Partial Dependency Plot.
-EXERCISE:
-Generate a 2D Partial Dependency Plot with humidity and temperature to predict the number of bikes rented depending on those parameters.
 
-BE CAREFUL: due to the size, extract a set of random samples from the BBDD before generating the data for the Partial Dependency Plot. 
+Bidimensional partial dependency plots are usually a very straightforward way to draw conclusions about the impact that the interaction of features has on the target variable. Nonetheless, it must be taken into consideration the fact that if the features do not apply being independent can lead to not fully realistic conclusions. 
 
-Show the density distribution of both input features with the 2D plot as shown in the class slides. 
+This arises because for unseen combination points of variables, the model has to create observations where the actual feature distribution probability is very low. In this case, we will be analyzing how the Humidity and Temperature infer on the rented bikes as a result of their interaction. Having said this and having into account some of the comments made in the previous section, we could expect that the interpretation might be unreliable at extreme combinations of the features such as very high temperatures together with extreme levels of humidity and in the opposite case. 
 
-TIP: Use geom_tile() to generate the 2D plot. Set width and height to avoid holes. 
+This will be confirmed with the data distribution, since 1st quantile is very width for both of the variables, what might reveal no samples at very low values and very short 10th quantile.
 
 ```{r}
-library(randomForest)
-bikes <- read.csv("day.csv")
-rtree <- randomForest(cnt ~ ., data=bikes)
-
-
+df = data[sample(nrow(data), 450), ]
+rtree = randomForest(cnt ~ hum + temp, data = df)
+Two.par <- partial(rtree, pred.var = c("temp","hum"), plot = TRUE, rug = TRUE)
+Two.par
 ```
+Our thougths about feature distributions are apparently, so we will have to take into account the break of the independence assumptions.
 
-QUESTION:
-Interpret the results.
+Nevertheless, this bidimensional dependency plot reinforces some of the drawn conclusions from previous practical exercises. We stated out that despite the temperature effect plot revealed that the higher that temperature was, the more daily rented bikes might be expected, this was not feasible at all from a practical point of view. The same way, it could be seen that drier humidity conditions had a significant negative effect on the rented bikes. 
+
+This could lead us to think that the best conditions for high bike rentals were very hot and humid days. From a realistic perspective, we might expect that smooth temperatures and slight humid levels could encourage people to rent bikes, as that weather conditions are comfortable for the user. In fact, this is what the bidimensional dependency plot reveals, since the highest predicted values are concentrated on temperature values in the 15-25 interval and for humid concentrations around 50%. This contradicts what effect plots revealed but have are more realistic.
+
+The same way, it can be seen that the conditions that imply the most negative outcome for bike rentals, revealing a very few rented bikes on that conditions were very high or low humidity levels and temperatures around 0 degrees.
+
+Meanwhile, in general it can be seen that temperatures
 
 ### 3.- PDP to explain the price of a house.
 EXERCISE:
