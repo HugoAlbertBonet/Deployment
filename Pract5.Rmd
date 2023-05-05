@@ -34,6 +34,14 @@ Show the density distribution of both input features with the 2D plot as shown i
 
 TIP: Use geom_tile() to generate the 2D plot. Set width and height to avoid holes. 
 
+```{r}
+library(randomForest)
+bikes <- read.csv("day.csv")
+rtree <- randomForest(cnt ~ ., data=bikes)
+
+
+```
+
 QUESTION:
 Interpret the results.
 
